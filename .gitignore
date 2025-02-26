@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 Term Project/*
+restaurant-finder-master/*
 __pycache__/
 *.py[cod]
 *$py.class
