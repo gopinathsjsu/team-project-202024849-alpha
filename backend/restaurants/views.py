@@ -1,4 +1,4 @@
-# backend/restaurants/views.py
+# backend/restaurants/views.py (Week 3)
 from django.http import JsonResponse
 from rest_framework import generics, viewsets
 from .models import Restaurant
@@ -9,8 +9,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
-from datetime import datetime, timedelta
 
 def ping(request):
     return JsonResponse({'message': 'pong from restaurants'})
@@ -75,17 +73,11 @@ class RestaurantSearchView(generics.ListAPIView):
         state = self.request.query_params.get('state')
         zip_code = self.request.query_params.get('zip_code')
 
-        print(f"Search params: city={city}, state={state}, zip_code={zip_code}")
-        print(f"Initial queryset count: {queryset.count()}")
-
         if city:
             queryset = queryset.filter(city__icontains=city)
-            print(f"After city filter: {queryset.count()}")
         if state:
             queryset = queryset.filter(state__icontains=state)
-            print(f"After state filter: {queryset.count()}")
         if zip_code:
             queryset = queryset.filter(zip_code__icontains=zip_code)
-            print(f"After zip_code filter: {queryset.count()}")
 
-        return queryset
+        return queryset 
