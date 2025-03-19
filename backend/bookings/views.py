@@ -114,3 +114,87 @@ class BookingViewSet(viewsets.ModelViewSet):
         ]:
             raise PermissionDenied("You do not have permission to delete this booking.")
         instance.delete()
+
+    @action(detail=False, methods=["get"])
+    def check_availability(self, request):
+        restaurant_id = request.query_params.get("restaurant")
+        date = request.query_params.get("date")
+        time = request.query_params.get("time")
+        party_size = request.query_params.get("party_size")
+
+        if not all([restaurant_id, date, time, party_size]):
+            return Response(
+                {"error": "Missing required parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            party_size = int(party_size)
+            if party_size < 1 or party_size > 20:
+                return Response(
+                    {"error": "Party size must be between 1 and 20"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except ValueError:
+            return Response(
+                {"error": "Invalid party size"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            restaurant = self.queryset.model.restaurant.field.related_model.objects.get(
+                id=restaurant_id
+            )
+        except self.queryset.model.restaurant.field.related_model.DoesNotExist:
+            return Response(
+                {"error": "Restaurant not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        is_available = self.queryset.model.check_availability(
+            restaurant=restaurant, date=date, time=time, party_size=party_size
+        )
+
+        return Response({"available": is_available})
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        booking = self.get_object()
+        if request.user.role not in ["admin", "manager"]:
+            return Response(
+                {"detail": "Only admins and managers can confirm bookings."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        booking.status = "confirmed"
+        booking.save()
+        return Response(self.get_serializer(booking).data)
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        booking = self.get_object()
+        if (
+            request.user.role not in ["admin", "manager"]
+            and request.user != booking.customer
+        ):
+            return Response(
+                {
+                    "detail": "Only the customer, admins, and managers can cancel bookings."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        booking.status = "cancelled"
+        booking.save()
+        return Response(self.get_serializer(booking).data)
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        booking = self.get_object()
+        if request.user.role not in ["admin", "manager"]:
+            return Response(
+                {"detail": "Only admins and managers can mark bookings as completed."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        booking.status = "completed"
+        booking.save()
+        return Response(self.get_serializer(booking).data)
