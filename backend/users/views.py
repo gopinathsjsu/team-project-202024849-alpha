@@ -1,4 +1,4 @@
-# backend/users/views.py (Week 3)
+# backend/users/views.py (Week 5)
 from django.http import JsonResponse
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,6 +8,8 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.serializers import ModelSerializer
 from rest_framework.exceptions import PermissionDenied
+from django.db.models import Count, Q
+from datetime import datetime, timedelta
 
 User = get_user_model()
 
@@ -84,6 +86,45 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'admin':
+            raise PermissionDenied("Only admins can access the user dashboard.")
+
+        # Get date range
+        days = int(request.query_params.get('days', 30))
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+
+        # Get user statistics
+        total_users = User.objects.count()
+        users_by_role = User.objects.values('role').annotate(count=Count('id'))
+        
+        # Get recent registrations
+        recent_registrations = User.objects.filter(
+            date_joined__gte=start_date
+        ).order_by('-date_joined')[:5]
+
+        # Get active users (users who have logged in recently)
+        active_users = User.objects.filter(
+            last_login__gte=start_date
+        ).count()
+
+        return Response({
+            'total_users': total_users,
+            'users_by_role': users_by_role,
+            'recent_registrations': [{
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role,
+                'date_joined': user.date_joined
+            } for user in recent_registrations],
+            'active_users': active_users
+        })
 
 def ping(request):
     return JsonResponse({'message': 'pong from users'}) 
