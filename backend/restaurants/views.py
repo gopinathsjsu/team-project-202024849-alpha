@@ -1,4 +1,4 @@
-# backend/restaurants/views.py (Week 5)
+# backend/restaurants/views.py
 from django.http import JsonResponse
 from rest_framework import generics, viewsets
 from .models import Restaurant
@@ -9,7 +9,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q, Count, Avg
+from django.db.models import Q
 from datetime import datetime, timedelta
 
 def ping(request):
@@ -75,52 +75,17 @@ class RestaurantSearchView(generics.ListAPIView):
         state = self.request.query_params.get('state')
         zip_code = self.request.query_params.get('zip_code')
 
+        print(f"Search params: city={city}, state={state}, zip_code={zip_code}")
+        print(f"Initial queryset count: {queryset.count()}")
+
         if city:
             queryset = queryset.filter(city__icontains=city)
+            print(f"After city filter: {queryset.count()}")
         if state:
             queryset = queryset.filter(state__icontains=state)
+            print(f"After state filter: {queryset.count()}")
         if zip_code:
             queryset = queryset.filter(zip_code__icontains=zip_code)
+            print(f"After zip_code filter: {queryset.count()}")
 
         return queryset
-
-class RestaurantDashboardView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        if request.user.role not in ['admin', 'manager']:
-            raise PermissionDenied("Only admins and managers can access the dashboard.")
-
-        # Get date range
-        days = int(request.query_params.get('days', 30))
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
-
-        # Base queryset
-        queryset = Restaurant.objects.all()
-        if request.user.role == 'manager':
-            queryset = queryset.filter(owner=request.user)
-
-        # Get statistics
-        total_restaurants = queryset.count()
-        approved_restaurants = queryset.filter(is_approved=True).count()
-        pending_restaurants = queryset.filter(is_approved=False).count()
-        
-        # Get average ratings
-        avg_ratings = queryset.aggregate(
-            avg_rating=Avg('rating'),
-            avg_cost_rating=Avg('cost_rating')
-        )
-
-        # Get recent activity
-        recent_activity = queryset.filter(
-            created_at__gte=start_date
-        ).order_by('-created_at')[:5]
-
-        return Response({
-            'total_restaurants': total_restaurants,
-            'approved_restaurants': approved_restaurants,
-            'pending_restaurants': pending_restaurants,
-            'average_ratings': avg_ratings,
-            'recent_activity': RestaurantSerializer(recent_activity, many=True).data
-        }) 
