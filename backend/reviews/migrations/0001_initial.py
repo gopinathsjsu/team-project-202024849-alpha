@@ -27,13 +27,4 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
-        migrations.AddField(
-            model_name="review",
-            name="user",
-            field=models.ForeignKey(
-                to="auth.User",
-                on_delete=models.CASCADE,
-                related_name="reviews",
-            ),
-        ),
     ]

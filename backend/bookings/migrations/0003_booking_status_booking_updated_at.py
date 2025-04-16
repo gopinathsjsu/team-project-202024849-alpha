@@ -29,9 +29,4 @@ class Migration(migrations.Migration):
             name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
-        migrations.AddField(
-            model_name="booking",
-            name="created_at",
-            field=models.DateTimeField(auto_now_add=True),
-        ),
     ]

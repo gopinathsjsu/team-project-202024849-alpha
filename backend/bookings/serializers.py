@@ -72,3 +72,8 @@ class BookingSerializer(serializers.ModelSerializer):
                     )
 
         return data
+
+    def create(self, validated_data):
+        # Set the customer to the current user
+        validated_data["customer"] = self.context["request"].user
+        return super().create(validated_data)

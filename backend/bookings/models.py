@@ -18,7 +18,11 @@ class Booking(models.Model):
     )
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     date = models.DateField()
-
+    time = models.TimeField()
+    party_size = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     email = models.EmailField(blank=True, null=True)
     phone_number = models.CharField(max_length=32, blank=True, null=True)
 
@@ -39,3 +43,26 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.customer.username} @ {self.restaurant.name} on {self.date} {self.time}"
+
+    @classmethod
+    def check_availability(cls, restaurant, date, time, party_size):
+        """
+        Check if a restaurant is available for the given date, time, and party size.
+        Returns True if available, False otherwise.
+        """
+        # Get all bookings for the restaurant on the given date and time
+        conflicting_bookings = cls.objects.filter(
+            restaurant=restaurant,
+            date=date,
+            time=time,
+            status__in=["pending", "confirmed"],
+        )
+
+        # Calculate total party size of existing bookings
+        total_booked = sum(booking.party_size for booking in conflicting_bookings)
+
+        # Assuming restaurant capacity is 100 (you might want to add this to Restaurant model)
+        restaurant_capacity = 100
+
+        # Check if there's enough capacity
+        return (total_booked + party_size) <= restaurant_capacity
