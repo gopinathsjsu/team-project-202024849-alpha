@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PrivateRoute from './components/auth/PrivateRoute';
+import BookingForm from './pages/BookingForm';
 
 const App: React.FC = () =>
 {
@@ -21,6 +22,7 @@ const App: React.FC = () =>
             <Route path="/" element={<Home />} />
             <Route path="/restaurants" element={<RestaurantList />} />
             <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+            <Route path="/book/:id" element={<BookingForm />} />
             <Route
               path="/bookings"
               element={

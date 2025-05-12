@@ -1,157 +1,255 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+  Container,
+  Paper,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  Alert,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  Stack,
+  Divider,
+} from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { fetchRestaurantById } from '../store/slices/restaurantSlice';
 import { createBooking } from '../store/slices/bookingSlice';
-import { RootState } from '../store';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import { RootState, AppDispatch } from '../store';
+import { BookingFormData, BookingData, Table } from '../types';
+
+// Add mock restaurants for fallback
+const MOCK_RESTAURANTS = [
+  {
+    id: 1,
+    name: "Mock Italian Bistro",
+    tables: [
+      { id: 1, table_number: 1, capacity: 2, is_available: true },
+      { id: 2, table_number: 2, capacity: 4, is_available: true }
+    ],
+  },
+  {
+    id: 2,
+    name: "Sushi Place",
+    tables: [
+      { id: 3, table_number: 1, capacity: 2, is_available: true },
+      { id: 4, table_number: 2, capacity: 4, is_available: false }
+    ],
+  },
+];
+
+const validationSchema = yup.object({
+  table: yup.string().required('Table selection is required'),
+  booking_date: yup.date().required('Date is required'),
+  booking_time: yup.date().required('Time is required'),
+  party_size: yup
+    .number()
+    .required('Party size is required')
+    .min(1, 'Party size must be at least 1')
+    .max(20, 'Party size cannot exceed 20'),
+  special_requests: yup.string(),
+});
 
 const BookingForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { currentRestaurant: restaurant, loading: restaurantLoading } = useSelector((state: RootState) => state.restaurant);
-  const { loading: bookingLoading, error: bookingError } = useSelector((state: RootState) => state.booking);
-  const [availableTables, setAvailableTables] = useState<any[]>([]);
-  const [form, setForm] = useState({
-    table: '',
-    date: '',
-    time: '',
-    party_size: 2,
-    special_requests: '',
-  });
+  const dispatch = useDispatch<AppDispatch>();
+  const { currentRestaurant: restaurant, loading: restaurantLoading } = useSelector(
+    (state: RootState) => state.restaurant
+  );
+  const { loading: bookingLoading, error: bookingError } = useSelector(
+    (state: RootState) => state.booking
+  );
+
+  const [availableTables, setAvailableTables] = useState<Table[]>([]);
 
   useEffect(() => {
     if (id) {
-      dispatch(fetchRestaurantById(Number(id)) as any);
+      dispatch(fetchRestaurantById(Number(id)));
     }
   }, [dispatch, id]);
 
+  // Fallback: if in mock mode and restaurant is not loaded, find it from mock data
+  const fallbackRestaurant = process.env.REACT_APP_USE_MOCK === 'true' && !restaurant && id
+    ? MOCK_RESTAURANTS.find(r => r.id === Number(id))
+    : null;
+  const displayRestaurant = restaurant || fallbackRestaurant;
+
   useEffect(() => {
-    if (restaurant && restaurant.tables) {
-      setAvailableTables(restaurant.tables.filter((table: any) => table.is_available));
+    if (displayRestaurant && displayRestaurant.tables) {
+      setAvailableTables(displayRestaurant.tables.filter((table: any) => table.is_available));
     }
-  }, [restaurant]);
+  }, [displayRestaurant]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const formik = useFormik<BookingFormData>({
+    initialValues: {
+      table: '',
+      booking_date: null,
+      booking_time: null,
+      party_size: 2,
+      special_requests: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      if (!values.booking_date || !values.booking_time) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const bookingData = {
-      restaurant: id ? Number(id) : 0,
-      table: form.table,
-      date: form.date,
-      time: form.time,
-      party_size: form.party_size,
-      special_requests: form.special_requests,
-    };
-    const result = await dispatch(createBooking(bookingData) as any);
-    if (!result.error) {
-      navigate('/bookings');
-    }
-  };
+      const bookingData: BookingData = {
+        restaurant: id ? Number(id) : 0,
+        table: values.table,
+        date: values.booking_date.toISOString().split('T')[0],
+        time: values.booking_time.toTimeString().split(' ')[0],
+        party_size: values.party_size,
+        special_requests: values.special_requests,
+      };
+
+      try {
+        await dispatch(createBooking(bookingData));
+        navigate('/bookings');
+      } catch (error) {
+        console.error('Booking failed:', error);
+      }
+    },
+  });
 
   if (restaurantLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <span>Loading...</span>
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress />
+      </Box>
     );
   }
 
-  console.log('BookingForm restaurant:', restaurant);
-
-  if (!restaurant) {
+  if (!displayRestaurant) {
     return (
-      <div className="container mx-auto mt-4">
-        <div className="bg-red-100 text-red-700 p-2 rounded">Restaurant not found or not loaded.</div>
-      </div>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error">Restaurant not found</Alert>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto mt-4 mb-4">
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="text-2xl font-bold mb-4">Book a Table at {restaurant.name}</h2>
+    <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h4" fontWeight={700} color="primary.main" gutterBottom align="center">
+          Reserve Your Table
+        </Typography>
+        <Typography variant="subtitle2" color="text.secondary" align="center" mb={2}>
+          {displayRestaurant.name}
+        </Typography>
+        <Divider sx={{ mb: 3 }} />
         {bookingError && (
-          <div className="bg-red-100 text-red-700 p-2 rounded mb-2">
+          <Alert severity="error" sx={{ mb: 2 }}>
             {typeof bookingError === 'string' ? bookingError : 'An error occurred while creating the booking'}
-          </div>
+          </Alert>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1">Date</label>
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Time</label>
-            <input
-              type="time"
-              name="time"
-              value={form.time}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Table</label>
-            <select
-              name="table"
-              value={form.table}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
-              required
-            >
-              <option value="">Select a table</option>
-              {availableTables.map((table) => (
-                <option key={table.id} value={table.id}>
-                  Table {table.table_number} (Capacity: {table.capacity})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1">Party Size</label>
-            <input
+        <Box component="form" onSubmit={formik.handleSubmit}>
+          <Stack spacing={3}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Date"
+                value={formik.values.booking_date}
+                onChange={(value) => formik.setFieldValue('booking_date', value)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: formik.touched.booking_date && Boolean(formik.errors.booking_date),
+                    helperText: formik.touched.booking_date && formik.errors.booking_date,
+                  },
+                }}
+                minDate={new Date()}
+              />
+            </LocalizationProvider>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <TimePicker
+                label="Time"
+                value={formik.values.booking_time}
+                onChange={(value) => formik.setFieldValue('booking_time', value)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: formik.touched.booking_time && Boolean(formik.errors.booking_time),
+                    helperText: formik.touched.booking_time && formik.errors.booking_time,
+                  },
+                }}
+              />
+            </LocalizationProvider>
+            <FormControl fullWidth>
+              <InputLabel>Table</InputLabel>
+              <Select
+                name="table"
+                value={formik.values.table}
+                onChange={formik.handleChange}
+                error={formik.touched.table && Boolean(formik.errors.table)}
+                label="Table"
+              >
+                {availableTables.length === 0 && (
+                  <MenuItem value="" disabled>
+                    No tables available
+                  </MenuItem>
+                )}
+                {availableTables.map((table) => (
+                  <MenuItem key={table.id} value={table.id}>
+                    Table {table.table_number} (Capacity: {table.capacity})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
               type="number"
               name="party_size"
-              value={form.party_size}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
-              min={1}
-              max={20}
-              required
+              label="Party Size"
+              value={formik.values.party_size}
+              onChange={formik.handleChange}
+              error={formik.touched.party_size && Boolean(formik.errors.party_size)}
+              helperText={formik.touched.party_size && formik.errors.party_size}
+              inputProps={{ min: 1, max: 20 }}
             />
-          </div>
-          <div>
-            <label className="block mb-1">Special Requests</label>
-            <textarea
-              name="special_requests"
-              value={form.special_requests}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
+            <TextField
+              fullWidth
+              multiline
               rows={3}
+              name="special_requests"
+              label="Special Requests (optional)"
+              value={formik.values.special_requests}
+              onChange={formik.handleChange}
+              error={
+                formik.touched.special_requests &&
+                Boolean(formik.errors.special_requests)
+              }
+              helperText={
+                formik.touched.special_requests && formik.errors.special_requests
+              }
             />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            disabled={bookingLoading}
-          >
-            {bookingLoading ? 'Booking...' : 'Book Table'}
-          </button>
-        </form>
-      </div>
-    </div>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => navigate(`/restaurants/${id}`)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={bookingLoading}
+              >
+                {bookingLoading ? <CircularProgress size={24} /> : 'Book Now'}
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
