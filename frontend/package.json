@@ -1,0 +1,67 @@
+{
+  "name": "restaurant-finder-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.0.1",
+    "@types/node": "^20.10.4",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-redux": "^7.1.33",
+    "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.3.6",
+    "formik": "^2.4.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.0.4",
+    "react-router-dom": "^6.21.1",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "yup": "^1.6.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__generator": "^7.27.0",
+    "@types/babel__template": "^7.4.4",
+    "@types/babel__traverse": "^7.20.7",
+    "@types/bonjour": "^3.5.13",
+    "@types/estree": "^1.0.7",
+    "@types/history": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/prettier": "^3.0.0",
+    "@types/trusted-types": "^2.0.7",
+    "autoprefixer": "^10.4.16",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "ts-jest": "^29.3.2"
+  }
+}
