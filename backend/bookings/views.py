@@ -8,6 +8,12 @@ from .models import Booking
 from .serializers import BookingSerializer
 from .filters import BookingFilter
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+try:
+    from twilio.rest import Client as TwilioClient
+except ImportError:
+    TwilioClient = None
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()
@@ -33,7 +39,27 @@ class BookingViewSet(viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
+        booking = serializer.save(customer=self.request.user)
+        # Send confirmation email if email is provided
+        if booking.email:
+            send_mail(
+                subject='Your Table Booking Confirmation',
+                message=f'Thank you for booking at {booking.restaurant.name} on {booking.date} at {booking.time}.',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com'),
+                recipient_list=[booking.email],
+                fail_silently=True,
+            )
+        # Send SMS if phone_number is provided and Twilio is available
+        if booking.phone_number and TwilioClient:
+            try:
+                twilio_client = TwilioClient(getattr(settings, 'TWILIO_ACCOUNT_SID', ''), getattr(settings, 'TWILIO_AUTH_TOKEN', ''))
+                twilio_client.messages.create(
+                    body=f'Your booking at {booking.restaurant.name} on {booking.date} at {booking.time} is confirmed.',
+                    from_=getattr(settings, 'TWILIO_PHONE_NUMBER', ''),
+                    to=booking.phone_number
+                )
+            except Exception as e:
+                print('Twilio SMS send failed:', e)
 
     def perform_update(self, serializer):
         if self.request.user != serializer.instance.customer and self.request.user.role not in ['admin', 'manager']:

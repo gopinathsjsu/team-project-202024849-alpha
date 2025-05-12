@@ -4,9 +4,12 @@ from restaurants.models import Restaurant
 from datetime import datetime
 
 class BookingSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         model = Booking
-        fields = ['id', 'customer', 'restaurant', 'date', 'time', 'party_size', 'status', 'created_at', 'updated_at']
+        fields = ['id', 'customer', 'restaurant', 'date', 'time', 'party_size', 'status', 'created_at', 'updated_at', 'email', 'phone_number']
         read_only_fields = ['customer', 'status', 'created_at', 'updated_at']
 
     def validate(self, data):

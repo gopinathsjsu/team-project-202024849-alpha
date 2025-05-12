@@ -20,6 +20,8 @@ class Booking(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=32, blank=True, null=True)
 
     def clean(self):
         # Validate party size
