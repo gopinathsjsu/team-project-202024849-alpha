@@ -8,19 +8,19 @@ Ryan Zhang, Tingfei Gu, Sheetal Yadav, Kawaljeet Kaur
 
 Responsibilities per member:
 
-Ryan Zhang
+Ryan Zhang (LaiSensei)
 Backend:
 All development for the restaurants and users Django apps (models, migrations, views, serializers, filters, tests)
 Admin/manager endpoints and dashboards
 Backend deployment settings and AWS deployment for these apps
 
-Tingfei Gu
+Tingfei Gu (SoulMind01)
 Backend:
 All development for the bookings and reviews Django apps (models, migrations, views, serializers, filters, tests)
 Customer endpoints, analytics, and database migration/backup
 Backend deployment and AWS deployment for these apps
 
-Sheetal Yadav
+Sheetal Yadav (SheetalYadav01)
 Frontend:
 All React frontend development (app setup, routing, all pages, UI components, Redux, dashboards)
 Frontend authentication, booking, review, and dashboard UIs
@@ -56,6 +56,19 @@ Admin Approval Page
 
 Admin Remove Page
 ![adminremove](./images/admin%20remove.jpg)
+
+## Diagrams
+Class Diagram
+![class](./images/class%20diagram.png)
+
+Use Case Diagram
+![usecase](./images/use%20case%20diagram.png)
+
+Deployment Diagram
+![deploy](./images/deploy%20diagram.png)
+
+Activity Diagram
+![activity](./images/activity%20diagram.png)
 
 Project Journal Link:
 https://drive.google.com/drive/folders/1u7f4pGdXYHN1gdKzptPo1bPYElRvz5KZ?usp=sharing
