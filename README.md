@@ -56,6 +56,10 @@ Manager dashboard page with add and edit restaurant
 ![manager1](./images/manager1.jpg)
 ![manager2](./images/manager2.jpg)
 
+Login/Register
+![Login](./images/Login.png)
+![Register](./images/Register.png)
+
 Admin Dashboard
 ![admindashboard](./images/admin%20dashboard.jpg)
 
