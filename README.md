@@ -81,6 +81,3 @@ Deployment Diagram
 Activity Diagram
 
 ![activity](./images/activity%20diagram.png)
-
-Project Journal Link:
-https://drive.google.com/drive/folders/1u7f4pGdXYHN1gdKzptPo1bPYElRvz5KZ?usp=sharing
