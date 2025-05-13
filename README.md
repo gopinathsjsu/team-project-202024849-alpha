@@ -30,5 +30,32 @@ Kawaljeet Kaur:
 Documentation and Sprint Reviews
 
 
+## Feature set
+Browse Restaurant Page and Search Filter
+![browse](./images/browse.jpg)
+
+Restaurant Details Page with Reviews and Google Map
+![detail&map](./images/details.jpg)
+
+Book Table Page with SMS and Email Nofication Function
+![sms](./images/book%20table%20sms.jpg)
+![email](./images/book%20table%20email.jpg)
+
+My Booking page with cancel function
+![bookings](./images/bookings.jpg)
+
+Manager dashboard page with add and edit restaurant
+![manager1](./images/manager1.jpg)
+![manager2](./images/manager2.jpg)
+
+Admin Dashboard
+![admindashboard](./images/admin%20dashboard.jpg)
+
+Admin Approval Page
+![adminapproval](./images/admin%20approval.jpg)
+
+Admin Remove Page
+![adminremove](./images/admin%20remove.jpg)
+
 Project Journal Link:
 https://drive.google.com/drive/folders/1u7f4pGdXYHN1gdKzptPo1bPYElRvz5KZ?usp=sharing
