@@ -31,3 +31,4 @@ Documentation and Sprint Reviews
 
 
 Project Journal Link:
+https://drive.google.com/drive/folders/1u7f4pGdXYHN1gdKzptPo1bPYElRvz5KZ?usp=sharing
