@@ -25,6 +25,7 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { RootState, AppDispatch } from '../store';
 import { BookingFormData, BookingData, Table } from '../types';
+import { format } from 'date-fns';
 
 // Add mock restaurants for fallback
 const MOCK_RESTAURANTS = [
@@ -46,16 +47,38 @@ const MOCK_RESTAURANTS = [
   },
 ];
 
+const COUNTRY_CODES = [
+  { code: '+1', label: 'US/Canada' },
+  { code: '+44', label: 'UK' },
+  { code: '+61', label: 'Australia' },
+  { code: '+81', label: 'Japan' },
+  { code: '+86', label: 'China' },
+  { code: '+91', label: 'India' },
+  // Add more as needed
+];
+
 const validationSchema = yup.object({
   table: yup.string().required('Table selection is required'),
   booking_date: yup.date().required('Date is required'),
-  booking_time: yup.date().required('Time is required'),
+  booking_time: yup.string().required('Time is required'),
   party_size: yup
     .number()
     .required('Party size is required')
     .min(1, 'Party size must be at least 1')
     .max(20, 'Party size cannot exceed 20'),
   special_requests: yup.string(),
+  email: yup.string().email('Invalid email format').when('email_notification', {
+    is: true,
+    then: (schema) => schema.required('Email is required for email notification'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  phone_number: yup.string().when('sms_notification', {
+    is: true,
+    then: (schema) => schema.required('Phone number is required for SMS notification'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  email_notification: yup.boolean(),
+  sms_notification: yup.boolean(),
 });
 
 const BookingForm: React.FC = () => {
@@ -70,6 +93,8 @@ const BookingForm: React.FC = () => {
   );
 
   const [availableTables, setAvailableTables] = useState<Table[]>([]);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [countryCode, setCountryCode] = useState<string>('+1');
 
   useEffect(() => {
     if (id) {
@@ -86,6 +111,9 @@ const BookingForm: React.FC = () => {
   useEffect(() => {
     if (displayRestaurant && displayRestaurant.tables) {
       setAvailableTables(displayRestaurant.tables.filter((table: any) => table.is_available));
+      setAvailableTimes('available_times' in displayRestaurant && Array.isArray((displayRestaurant as any).available_times)
+        ? (displayRestaurant as any).available_times
+        : []);
     }
   }, [displayRestaurant]);
 
@@ -93,21 +121,37 @@ const BookingForm: React.FC = () => {
     initialValues: {
       table: '',
       booking_date: null,
-      booking_time: null,
+      booking_time: '',
       party_size: 2,
       special_requests: '',
+      email: '',
+      phone_number: '',
+      email_notification: false,
+      sms_notification: false,
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       if (!values.booking_date || !values.booking_time) return;
 
+      // Fix: format date as YYYY-MM-DD in local timezone without timezone conversion
+      const localDate = format(values.booking_date, 'yyyy-MM-dd');
+      
+      // Fix: ensure phone number is in E.164 format
+      const fullPhoneNumber = values.sms_notification 
+        ? `${countryCode}${values.phone_number.replace(/^\+/, '')}`
+        : '';
+
       const bookingData: BookingData = {
         restaurant: id ? Number(id) : 0,
         table: values.table,
-        date: values.booking_date.toISOString().split('T')[0],
-        time: values.booking_time.toTimeString().split(' ')[0],
+        date: localDate,
+        time: values.booking_time,
         party_size: values.party_size,
         special_requests: values.special_requests,
+        email: values.email,
+        phone_number: fullPhoneNumber,
+        email_notification: values.email_notification,
+        sms_notification: values.sms_notification,
       };
 
       try {
@@ -167,20 +211,25 @@ const BookingForm: React.FC = () => {
                 minDate={new Date()}
               />
             </LocalizationProvider>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <TimePicker
-                label="Time"
+            <FormControl fullWidth>
+              <InputLabel>Time</InputLabel>
+              <Select
+                name="booking_time"
                 value={formik.values.booking_time}
-                onChange={(value) => formik.setFieldValue('booking_time', value)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: formik.touched.booking_time && Boolean(formik.errors.booking_time),
-                    helperText: formik.touched.booking_time && formik.errors.booking_time,
-                  },
-                }}
-              />
-            </LocalizationProvider>
+                onChange={formik.handleChange}
+                error={formik.touched.booking_time && Boolean(formik.errors.booking_time)}
+                label="Time"
+              >
+                {availableTimes.length === 0 && (
+                  <MenuItem value="" disabled>
+                    No times available
+                  </MenuItem>
+                )}
+                {availableTimes.map((time) => (
+                  <MenuItem key={time} value={time}>{time}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <FormControl fullWidth>
               <InputLabel>Table</InputLabel>
               <Select
@@ -229,6 +278,69 @@ const BookingForm: React.FC = () => {
                 formik.touched.special_requests && formik.errors.special_requests
               }
             />
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <FormControl>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="email_notification"
+                    checked={formik.values.email_notification}
+                    onChange={formik.handleChange}
+                  />
+                  &nbsp;Email Notification
+                </label>
+              </FormControl>
+              <FormControl>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="sms_notification"
+                    checked={formik.values.sms_notification}
+                    onChange={formik.handleChange}
+                  />
+                  &nbsp;SMS Notification
+                </label>
+              </FormControl>
+            </Box>
+            {formik.values.email_notification && (
+              <TextField
+                fullWidth
+                name="email"
+                label="Email Address"
+                type="email"
+                value={formik.values.email || ''}
+                onChange={formik.handleChange}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+                required
+              />
+            )}
+            {formik.values.sms_notification && (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <FormControl sx={{ minWidth: 100 }}>
+                  <Select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    size="small"
+                  >
+                    {COUNTRY_CODES.map((c) => (
+                      <MenuItem key={c.code} value={c.code}>{c.code} ({c.label})</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  name="phone_number"
+                  label="Phone Number"
+                  type="tel"
+                  value={formik.values.phone_number || ''}
+                  onChange={formik.handleChange}
+                  error={formik.touched.phone_number && Boolean(formik.errors.phone_number)}
+                  helperText={formik.touched.phone_number && formik.errors.phone_number}
+                  required
+                />
+              </Box>
+            )}
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
               <Button
                 variant="outlined"

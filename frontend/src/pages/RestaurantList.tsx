@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { fetchRestaurants, setFilters } from '../store/slices/restaurantSlice';
+import { useNavigate, Link } from 'react-router-dom';
+import { fetchRestaurants } from '../store/slices/restaurantSlice';
 import { RootState } from '../store';
 
 const cuisineTypes = [
@@ -20,7 +20,7 @@ const cuisineTypes = [
 const RestaurantList: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { restaurants, loading, error, totalCount, filters } = useSelector((state: RootState) => state.restaurant);
+  const { restaurants, loading, error } = useSelector((state: RootState) => state.restaurant);
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [cuisine, setCuisine] = useState('');
@@ -88,6 +88,121 @@ const RestaurantList: React.FC = () => {
   const handleBookTime = (restaurantId: number, time: string) => {
     navigate(`/book/${restaurantId}?time=${encodeURIComponent(time)}`);
   };
+
+  const mockRestaurants = [
+    {
+      id: 1,
+      name: 'Italian Bistro',
+      cuisine: 'Italian',
+      city: 'San Francisco',
+      state: 'CA',
+      cost_rating: 3,
+      average_rating: 4.5,
+      total_reviews: 120,
+      description: 'A cozy Italian bistro with homemade pasta and a great wine list.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['18:00', '18:30', '19:00', '19:30', '20:00'],
+      times_booked_today: 5,
+    },
+    {
+      id: 2,
+      name: 'Sushi Place',
+      cuisine: 'Japanese',
+      city: 'Oakland',
+      state: 'CA',
+      cost_rating: 2,
+      average_rating: 4.2,
+      total_reviews: 80,
+      description: 'Fresh sushi and sashimi with a modern twist.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['17:30', '18:00', '18:30', '19:00'],
+      times_booked_today: 3,
+    },
+    {
+      id: 3,
+      name: 'Ramen King',
+      cuisine: 'Japanese',
+      city: 'Noodle City',
+      state: 'NY',
+      cost_rating: 2,
+      average_rating: 4.7,
+      total_reviews: 95,
+      description: 'Authentic ramen with rich broth and hand-pulled noodles.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['17:30', '18:30', '19:30', '20:30'],
+      times_booked_today: 7,
+    },
+    {
+      id: 4,
+      name: 'Taco Fiesta',
+      cuisine: 'Mexican',
+      city: 'Los Angeles',
+      state: 'CA',
+      cost_rating: 1,
+      average_rating: 4.0,
+      total_reviews: 60,
+      description: 'Colorful taqueria with street-style tacos and margaritas.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['18:00', '19:00', '20:00'],
+      times_booked_today: 2,
+    },
+    {
+      id: 5,
+      name: 'Curry House',
+      cuisine: 'Indian',
+      city: 'Fremont',
+      state: 'CA',
+      cost_rating: 2,
+      average_rating: 4.3,
+      total_reviews: 70,
+      description: 'Traditional Indian curries and tandoori specialties.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['17:00', '18:00', '19:00', '20:00'],
+      times_booked_today: 4,
+    },
+    {
+      id: 6,
+      name: 'Burger Joint',
+      cuisine: 'American',
+      city: 'San Jose',
+      state: 'CA',
+      cost_rating: 1,
+      average_rating: 4.1,
+      total_reviews: 110,
+      description: 'Classic burgers, fries, and shakes in a retro setting.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['18:00', '19:00', '20:00'],
+      times_booked_today: 6,
+    },
+    {
+      id: 7,
+      name: 'Le Petit Paris',
+      cuisine: 'French',
+      city: 'San Francisco',
+      state: 'CA',
+      cost_rating: 4,
+      average_rating: 4.8,
+      total_reviews: 50,
+      description: 'Elegant French dining with a romantic atmosphere.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['17:30', '18:30', '19:30'],
+      times_booked_today: 1,
+    },
+    {
+      id: 8,
+      name: 'Dragon Wok',
+      cuisine: 'Chinese',
+      city: 'Daly City',
+      state: 'CA',
+      cost_rating: 2,
+      average_rating: 4.0,
+      total_reviews: 90,
+      description: 'Family-style Chinese food with all the classics.',
+      primary_image: '/restaurant-placeholder.jpg',
+      available_times: ['18:00', '19:00', '20:00'],
+      times_booked_today: 8,
+    },
+  ];
 
   if (loading && !restaurants.length) {
     return (
@@ -239,7 +354,7 @@ const RestaurantList: React.FC = () => {
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {restaurants.map((restaurant: any) => (
+            {mockRestaurants.map((restaurant: any) => (
               <div
                 key={restaurant.id}
                 className="bg-white rounded shadow cursor-pointer hover:shadow-lg transition-shadow flex flex-col"

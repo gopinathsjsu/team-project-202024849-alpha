@@ -10,7 +10,7 @@ const Login: React.FC = () =>
   const [password, setPassword] = useState('');
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading, error, user } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) =>
   {
@@ -18,7 +18,14 @@ const Login: React.FC = () =>
     const result = await dispatch(login({ username, password }));
     if (login.fulfilled.match(result))
     {
-      navigate('/restaurants');
+      const loggedInUser = result.payload.user;
+      if (loggedInUser.role === 'manager') {
+        navigate('/manager/restaurants');
+      } else if (loggedInUser.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/restaurants');
+      }
     }
   };
 

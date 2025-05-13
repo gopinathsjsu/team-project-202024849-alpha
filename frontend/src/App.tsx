@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
 import RestaurantList from './pages/RestaurantList';
@@ -10,9 +10,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PrivateRoute from './components/auth/PrivateRoute';
 import BookingForm from './pages/BookingForm';
+import ManagerRestaurants from './pages/manager/ManagerRestaurants';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import { useSelector } from 'react-redux';
+import { RootState } from './store';
 
 const App: React.FC = () =>
 {
+  const user = useSelector((state: RootState) => state.auth.user);
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
@@ -41,6 +47,8 @@ const App: React.FC = () =>
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/manager/restaurants" element={user?.role === 'manager' ? <ManagerRestaurants /> : <Navigate to="/unauthorized" />} />
+            <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/unauthorized" />} />
           </Routes>
         </main>
       </div>

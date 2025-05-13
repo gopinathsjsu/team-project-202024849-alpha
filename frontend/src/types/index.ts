@@ -14,9 +14,13 @@ export interface Restaurant {
 export interface BookingFormData {
   table: string;
   booking_date: Date | null;
-  booking_time: Date | null;
+  booking_time: string | null;
   party_size: number;
   special_requests: string;
+  email: string;
+  phone_number: string;
+  email_notification: boolean;
+  sms_notification: boolean;
 }
 
 export interface BookingData {
@@ -26,4 +30,8 @@ export interface BookingData {
   time: string;
   party_size: number;
   special_requests?: string;
+  email: string;
+  phone_number: string;
+  email_notification: boolean;
+  sms_notification: boolean;
 } 

@@ -108,6 +108,13 @@ export const cancelBooking = createAsyncThunk(
   'booking/cancelBooking',
   async (bookingId: number, { rejectWithValue }) =>
   {
+    if (process.env.REACT_APP_USE_MOCK === 'true') {
+      // Remove booking from mock bookings in localStorage
+      const allBookings = getMockBookings();
+      const updatedBookings = allBookings.filter((b: any) => b.id !== bookingId);
+      setMockBookings(updatedBookings);
+      return bookingId;
+    }
     try
     {
       const response = await axios.delete(`${API_URL}/bookings/${bookingId}/`);

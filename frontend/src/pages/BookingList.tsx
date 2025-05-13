@@ -53,7 +53,7 @@ const BookingList: React.FC = () =>
                     </Link>
                   </h3>
                   <p className="text-gray-600 mb-2">
-                    Date: {new Date(booking.date).toLocaleDateString()}
+                    Date: {booking.date}
                   </p>
                   <p className="text-gray-600 mb-2">Time: {booking.time}</p>
                   <p className="text-gray-600 mb-2">Party Size: {booking.party_size}</p>
