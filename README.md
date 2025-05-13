@@ -30,13 +30,13 @@ Kawaljeet Kaur:
 Documentation and Sprint Reviews
 
 ## Product Backlog
-[product backlog](./Product%20Backlog.pdf)
+[product backlog.pdf](./Product%20Backlog.pdf)
 
 ## Project Journal
-[project journal](./Project%20Journal.pdf)
+[project journal.pdf](./Project%20Journal.pdf)
 
 ## Sprint Backlog
-[sprint backlog](./Sprint%20Backlog%20-%20Sheet1.pdf)
+[sprint backlog.pdf](./Sprint%20Backlog%20-%20Sheet1.pdf)
 
 ## Feature set
 Browse Restaurant Page and Search Filter
