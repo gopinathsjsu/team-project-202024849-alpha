@@ -29,6 +29,14 @@ Frontend testing, build, and deployment
 Kawaljeet Kaur:
 Documentation and Sprint Reviews
 
+## Product Backlog
+[product backlog](./Product%20Backlog.pdf)
+
+## Project Journal
+[project journal](./Project%20Journal.pdf)
+
+## Sprint Backlog
+[sprint backlog](./Sprint%20Backlog%20-%20Sheet1.pdf)
 
 ## Feature set
 Browse Restaurant Page and Search Filter
