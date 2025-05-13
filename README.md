@@ -67,15 +67,19 @@ Admin Remove Page
 
 ## Diagrams
 Class Diagram
+
 ![class](./images/class%20diagram.png)
 
 Use Case Diagram
+
 ![usecase](./images/use%20case%20diagram.png)
 
 Deployment Diagram
+
 ![deploy](./images/deploy%20diagram.png)
 
 Activity Diagram
+
 ![activity](./images/activity%20diagram.png)
 
 Project Journal Link:
